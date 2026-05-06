@@ -115,7 +115,7 @@ export const sendWeeklyDigest = inngest.createFunction(
 
     await step.run('send-email', async () => {
       await resend.emails.send({
-        from: 'Witto <onboarding@resend.dev>', // change to digest@witto.co after domain verify
+        from: 'Witto <hello@witto.co>', // change to digest@witto.co after domain verify
         to: email,
         subject: `Witto weekly — ${enriched.length} project${enriched.length === 1 ? '' : 's'}`,
         react: DigestEmail({ data: { weekStarting: weekAgo, projects: enriched } }),
