@@ -1,4 +1,4 @@
-import { Show, SignInButton } from '@clerk/nextjs'
+import { Show } from '@clerk/nextjs'
 import Link from 'next/link'
 
 export default function Home() {
@@ -12,7 +12,7 @@ export default function Home() {
           className="mono text-[12px] tracking-[0.18em] uppercase mb-10"
           style={{ color: 'var(--text-3)' }}
         >
-          A private dashboard · for people who ship
+          For the projects you actually started
         </div>
 
         <h1
@@ -25,7 +25,7 @@ export default function Home() {
             textWrap: 'balance',
           }}
         >
-          Track every project<br />you ship.
+          Finish what you<br />started.
         </h1>
 
         <p
@@ -40,17 +40,19 @@ export default function Home() {
             textWrap: 'pretty',
           }}
         >
-          Witto is your private dashboard for the half-dozen things you have in flight.
-          Stars, traffic, revenue — one screen, weekly digest, no ceremony.
+          A quiet home for the half-dozen things you have in flight. Break each one into
+          a few small milestones, tick them off, watch the progress fill in. The opposite
+          of a productivity app.
         </p>
 
         <div className="mt-12 flex items-center gap-4">
           <Show when="signed-out">
-            <SignInButton mode="modal">
-              <button className="btn-primary px-6 h-[46px] text-[15px]">
-                Sign in to your dashboard
-              </button>
-            </SignInButton>
+            <Link
+              href="/sign-in"
+              className="btn-primary px-6 h-[46px] text-[15px] inline-flex items-center"
+            >
+              Start tracking
+            </Link>
           </Show>
           <Show when="signed-in">
             <Link
@@ -66,7 +68,7 @@ export default function Home() {
         </div>
 
         <div className="mt-10 mono text-[12px]" style={{ color: 'var(--text-4)' }}>
-          Free while in beta · No card · Built by indie hackers
+          Free while in beta · No card · No streaks to break
         </div>
       </section>
 
@@ -75,18 +77,18 @@ export default function Home() {
         <div className="grid grid-cols-3 gap-16">
           <FeatureCol
             kicker="01"
-            title="One screen for the whole portfolio."
-            body="Five, ten, fifteen projects — each one a card. Stars, last commit, revenue when you connect it. Glance, then move on."
+            title="Milestones you actually tick."
+            body="Five small wins beat one finish line. Break each project into the next handful of milestones — domain bought, landing live, first signup — and tick them as you get there."
           />
           <FeatureCol
             kicker="02"
-            title="A weekly digest in your inbox."
-            body="Every Monday, what moved and what went quiet. The kind of email you actually open. Optional, off by default."
+            title="A gentle weekly check-in."
+            body="Every Monday, what you moved this week. No streaks, no red bars, no guilt about the project you didn't open. Optional, off by default."
           />
           <FeatureCol
             kicker="03"
-            title="Yours. Private by design."
-            body="No public profile, no leaderboard, no follower count. Witto is for you and the work — not for performance."
+            title="Private by design."
+            body="No public profile, no leaderboard, no follower count. Witto is for you and the work — not for performance, not for anyone watching."
           />
         </div>
       </section>

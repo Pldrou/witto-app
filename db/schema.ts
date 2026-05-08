@@ -1,4 +1,4 @@
-import { pgTable, text, uuid, timestamp, jsonb, numeric, index } from "drizzle-orm/pg-core";
+import { pgTable, text, uuid, timestamp, jsonb, numeric, integer, index } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(), // Clerk user id, e.g. "user_2abc..."
@@ -12,6 +12,8 @@ export const projects = pgTable("projects", {
   name: text("name").notNull(),
   url: text("url"),
   githubRepo: text("github_repo"), // e.g. "owner/repo"
+  stripeSecretKey: text("stripe_secret_key"),
+  currency: text("currency").default("usd").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (t) => ({
@@ -39,4 +41,15 @@ export const metricSnapshots = pgTable("metric_snapshots", {
   capturedAt: timestamp("captured_at").defaultNow().notNull(),
 }, (t) => ({
   lookupIdx: index("metric_snapshots_lookup_idx").on(t.projectId, t.metric, t.capturedAt),
+}));
+
+export const milestones = pgTable("milestones", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  label: text("label").notNull(),
+  position: integer("position").notNull(),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => ({
+  projectIdx: index("milestones_project_idx").on(t.projectId, t.position),
 }));

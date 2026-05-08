@@ -1,16 +1,16 @@
 import { inngest } from './client'
 import { db } from '@/db'
 import { users, projects, metricSnapshots } from '@/db/schema'
-import { and, eq, lte, desc, isNotNull } from 'drizzle-orm'
+import { and, eq, lte, desc, isNotNull, or } from 'drizzle-orm'
 import { refreshProjectMetrics } from '@/lib/metrics/refresh'
 import { Resend } from 'resend'
 import { DigestEmail, type DigestProject } from '@/lib/email/digest'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-export const refreshAllGithubMetrics = inngest.createFunction(
+export const refreshAllProjectMetrics = inngest.createFunction(
   {
-    id: 'refresh-all-github-metrics',
+    id: 'refresh-all-project-metrics',
     triggers: { cron: '0 * * * *' }, // top of every hour
   },
   async ({ step }) => {
@@ -18,7 +18,7 @@ export const refreshAllGithubMetrics = inngest.createFunction(
       return db
         .select({ id: projects.id })
         .from(projects)
-        .where(isNotNull(projects.githubRepo))
+        .where(or(isNotNull(projects.githubRepo), isNotNull(projects.stripeSecretKey)))
     })
 
     for (const p of repos) {
@@ -101,6 +101,26 @@ export const sendWeeklyDigest = inngest.createFunction(
             .orderBy(desc(metricSnapshots.capturedAt))
             .limit(1)
 
+          const [latestRevenue] = await db
+            .select()
+            .from(metricSnapshots)
+            .where(and(eq(metricSnapshots.projectId, p.id), eq(metricSnapshots.metric, 'stripe_revenue_30d_cents')))
+            .orderBy(desc(metricSnapshots.capturedAt))
+            .limit(1)
+
+          const [pastRevenue] = await db
+            .select()
+            .from(metricSnapshots)
+            .where(
+              and(
+                eq(metricSnapshots.projectId, p.id),
+                eq(metricSnapshots.metric, 'stripe_revenue_30d_cents'),
+                lte(metricSnapshots.capturedAt, weekAgo)
+              )
+            )
+            .orderBy(desc(metricSnapshots.capturedAt))
+            .limit(1)
+
           const stars = latestStars ? Number(latestStars.value) : null
           const past = pastStars ? Number(pastStars.value) : null
           const starsDelta = stars !== null && past !== null ? stars - past : null
@@ -108,7 +128,21 @@ export const sendWeeklyDigest = inngest.createFunction(
             ? Math.floor((Date.now() - Number(lastCommit.value)) / (1000 * 60 * 60 * 24))
             : null
 
-          return { name: p.name, url: p.url, stars, starsDelta, daysSinceLastCommit }
+          const revenueCents30d = latestRevenue ? Number(latestRevenue.value) : null
+          const pastRev = pastRevenue ? Number(pastRevenue.value) : null
+          const revenueDeltaCents =
+            revenueCents30d !== null && pastRev !== null ? revenueCents30d - pastRev : null
+
+          return {
+            name: p.name,
+            url: p.url,
+            stars,
+            starsDelta,
+            daysSinceLastCommit,
+            revenueCents30d,
+            revenueDeltaCents,
+            currency: p.currency,
+          }
         })
       )
     })

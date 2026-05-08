@@ -8,11 +8,22 @@ export type DigestProject = {
   stars: number | null
   starsDelta: number | null
   daysSinceLastCommit: number | null
+  revenueCents30d: number | null
+  revenueDeltaCents: number | null  // vs 7 days ago
+  currency: string
 }
 
 export type DigestData = {
   weekStarting: Date
   projects: DigestProject[]
+}
+
+function formatCurrency(cents: number, currency: string): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: (currency || 'usd').toUpperCase(),
+    maximumFractionDigits: 0,
+  }).format(cents / 100)
 }
 
 export function DigestEmail({ data }: { data: DigestData }) {
@@ -37,6 +48,16 @@ export function DigestEmail({ data }: { data: DigestData }) {
                     ⭐ {p.stars}
                     {p.starsDelta !== null && p.starsDelta !== 0 && (
                       <> ({p.starsDelta > 0 ? '+' : ''}{p.starsDelta} this week)</>
+                    )}
+                  </Text>
+                )}
+                {p.revenueCents30d !== null && (
+                  <Text>
+                    {formatCurrency(p.revenueCents30d, p.currency)} this month
+                    {p.revenueDeltaCents !== null && p.revenueDeltaCents !== 0 && (
+                      <span style={{ color: p.revenueDeltaCents > 0 ? '#3a8a5c' : '#b91c1c' }}>
+                        {' '}({p.revenueDeltaCents > 0 ? '+' : ''}{formatCurrency(p.revenueDeltaCents, p.currency)} vs last week)
+                      </span>
                     )}
                   </Text>
                 )}

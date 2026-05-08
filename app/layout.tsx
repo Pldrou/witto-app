@@ -1,8 +1,12 @@
 import type { Metadata } from 'next'
-import { ClerkProvider, Show, SignInButton, UserButton } from '@clerk/nextjs'
-import { Inter_Tight, JetBrains_Mono } from 'next/font/google'
+import { ClerkProvider, Show } from '@clerk/nextjs'
+import { UserMenu } from '@/components/user-menu'
+import { Inter_Tight, JetBrains_Mono, Geist } from 'next/font/google'
 import Link from 'next/link'
 import './globals.css'
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const interTight = Inter_Tight({
   variable: '--font-inter-tight',
@@ -18,7 +22,7 @@ const jetBrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: 'Witto',
-  description: 'A private dashboard for people who ship.',
+  description: 'Finish what you started. A quiet home for the projects you have in flight.',
 }
 
 export default function RootLayout({
@@ -27,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={cn("font-sans", geist.variable)}>
       <body className={`${interTight.variable} ${jetBrainsMono.variable} antialiased`}>
         <ClerkProvider>
           <header className="header-blur sticky top-0 z-40">
@@ -43,15 +47,15 @@ export default function RootLayout({
                   <Show when="signed-out">
                     <a href="#" className="btn-ghost px-3 py-1.5" style={{ color: 'var(--text-2)' }}>Changelog</a>
                     <a href="#" className="btn-ghost px-3 py-1.5" style={{ color: 'var(--text-2)' }}>Pricing</a>
-                    <SignInButton mode="modal">
-                      <button className="btn-ghost px-3 py-1.5" style={{ color: 'var(--text)' }}>Sign in</button>
-                    </SignInButton>
+                    <Link href="/sign-in" className="btn-ghost px-3 py-1.5" style={{ color: 'var(--text)' }}>
+                      Sign in
+                    </Link>
                   </Show>
                   <Show when="signed-in">
                     <Link href="/dashboard" className="btn-ghost px-3 py-1.5" style={{ color: 'var(--text)' }}>
                       Dashboard
                     </Link>
-                    <UserButton />
+                    <UserMenu />
                   </Show>
                 </nav>
               </div>
